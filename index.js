@@ -3,7 +3,10 @@
 
 // init project
 var express = require('express');
+const router = require("./apiRouter.js")
+
 var app = express();
+
 
 // enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
 // so that your API is remotely testable by FCC 
@@ -12,6 +15,9 @@ app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 20
 
 // http://expressjs.com/en/starter/static-files.html
 app.use(express.static('public'));
+
+// router
+app.use("/api", router);
 
 // http://expressjs.com/en/starter/basic-routing.html
 app.get("/", function (req, res) {
