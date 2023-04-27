@@ -8,13 +8,13 @@ function processDate(request, response){
   const dateInput = request.params.date; // get "date" param from url
   
   let dateConverted = undefined; 
-
+  const onlyDigits = /^\d+$/; // regex to match only digits in dateInput
   if (dateInput){ // if "date" was passed in the url  
-    if (dateInput.includes("-") || dateInput.includes("/")){ // for example, 2015-12-25 or 2015/12/25
-      dateConverted = new Date(dateInput);
+    if (onlyDigits.test(dateInput)){ // for example 1451001600000 (time in milliseconds since unix epoch)
+      dateConverted = new Date(parseInt(dateInput));      
     }      
-    else{ // for example 1451001600000 (time in milliseconds since unix epoch)
-      dateConverted = new Date(parseInt(dateInput)); 
+    else{// for example, 2015-12-25 or 2015/12/25 
+      dateConverted = new Date(dateInput);
     }
   }
   else { // if "date" was not passed in the url
