@@ -2,40 +2,43 @@ const express = require('express');
 
 const router = express.Router()
 
-function dateToUtc(date){
-  /* 
-  formats date to: weekday, d m y hh:mm:ss GMT
-  for example: Fri, 25 Dec 2015 00:00:00 GMT
-  */
+function processDate(request, response){
+  // function to process api requests
   
-  let dateElements = date.toString().split("+")[0].split(" ");
-  dateElements[0] += ",";
-  return dateElements.join(" ");
-}
+  const dateInput = request.params.date; // get "date" param from url
+  
+  let dateConverted = undefined; 
 
-function processDate(request, response) {
-  const dateInput = request.params.date;
-  try {
-    if (dateInput){
-      const dateConverted = new Date(dateInput);
+  if (dateInput){ // if "date" was passed in the url  
+    if (dateInput.includes("-") || dateInput.includes("/")){ // for example, 2015-12-25 or 2015/12/25
+      dateConverted = new Date(dateInput);
     }      
-    else{
-      const dateConverted = new Date(); // if not date passed, get current date
-    }      
-    const dateJson = { // date info as a json object
-      unix: dateConverted.getTime(), // time in milliseconds
-      utc: dateToUtc(date) // date in weekday, d m y hh:mm:ss GMT format
+    else{ // for example 1451001600000 (time in milliseconds since unix epoch)
+      dateConverted = new Date(parseInt(dateInput)); 
     }
-    // send response
-    response.json(dateJson);
-    
-  } catch (error) {
-    console.log(`${error}: ${dateInput} is not a valid date.`);    
-    response.json({error: "Invalid Date"}); // send response
   }
-  
-}
-// router definition
-router.get("/:date?", processDate);
+  else { // if "date" was not passed in the url
+    dateConverted = new Date();    
+  }
 
-module.exports = router; 
+  // 
+  const dateInMilliseconds = dateConverted.getTime(); // date in milliseconds since unix epoch
+  const dateInUTC = dateConverted.toUTCString(); // date in UTC format
+
+  let dateJson = undefined;
+  if (isNaN(dateInMilliseconds)){ // if bad "date"
+    dateJson = {error: "Invalid Date"}; // report error as a json object
+  }
+  else{
+    // date info as a json object
+    dateJson = {unix: dateInMilliseconds, utc: dateInUTC};    
+  }
+
+  // send response in json format
+  response.json(dateJson);  
+}    
+  
+// router definition
+router.get("/:date?", processDate); // function "processDate" serves requests at the ""/api/:date?"" endpoint
+
+module.exports = router; // make "router" object available for other modules
